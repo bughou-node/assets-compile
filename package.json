@@ -1,6 +1,6 @@
 {
   "name": "assets-compile",
-  "version": "1.0.5",
+  "version": "0.0.0",
   "description": "compile js using browserify, compile css using less",
   "main": "index.js",
   "scripts": {
