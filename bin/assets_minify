@@ -1,0 +1,112 @@
+#!/usr/bin/env node
+
+var uglifyjs = require('uglify-js');
+var CleanCSS = require('clean-css');
+var cleancss = new CleanCSS();
+
+var async = require('async');
+var fs = require('fs');
+var _path = require('path');
+var crypto = require('crypto');
+var time_format = require('../../common/utils/time_format.js');
+
+var log_error = require('../../common/utils/track_error.js').log_error;
+var wrap_error = require('../../common/utils/track_error.js').wrap_error;
+var assets_json = require('../assets.json');
+
+var public_dir = _path.normalize(__dirname + '/../public');
+
+
+
+async.forEachOfSeries(assets_json, function (meta, path, callback) {
+  if (!/\.(js|css)$/.test(path)) return callback();
+
+  if_modified(path, meta, function() {
+    console.log(path);
+    minify_asset(path, meta, callback);
+  }, callback);
+}, function(err) {
+  if (err) return log_error(err);
+  fs.writeFile(
+    _path.normalize(__dirname + '/../assets.json'),
+    JSON.stringify(assets_json, null, 2),
+    function(err) {
+      if (err) log_error(err);
+    });
+});
+
+// callback()
+// callback2(err)
+function if_modified(path, meta, callback, callback2) {
+  if (!meta || !meta.mtime) return callback();
+
+  fs.stat(get_input_path(path), function(err, stats) {
+    if (err) return callback2(wrap_error(err));
+
+    if (stats.mtime > new Date(meta.mtime)) {
+      callback();
+    } else {
+      callback2();
+    }
+  });
+}
+
+// callback(err)
+function minify_asset(path, meta, callback) {
+  minify(path, function(err, result){
+    if (err) return callback(wrap_error(err));
+    var md5 = crypto.createHash('md5').update(result).digest('hex');
+
+    meta.mtime = time_format({ zone: true })
+    if (md5 === meta.md5) return callback();
+    meta.md5 = md5;
+
+    save_asset_file(path, result, callback);
+  });
+}
+
+function minify(path, callback) {
+  switch(_path.extname(path)) {
+    case '.js':
+      return minify_js(path, callback);
+      break;
+    case '.css':
+      return minify_css(path, callback);
+    default:
+      throw 'unknown ext for: ' + path;
+  }
+}
+
+function minify_js(path, callback) {
+  var result = uglifyjs.minify(get_input_path(path));
+  callback(null, result.code);
+}
+
+function minify_css(path, callback) {
+  var content = fs.readFileSync(get_input_path(path));
+  var result = cleancss.minify(content);
+  callback(null, result.styles);
+}
+
+function save_asset_file(path, result, callback) {
+  var output_path = get_output_path(path);
+  fs.writeFile(output_path, result, function(err) {
+    if (err) callback(wrap_error(err));
+    else callback();
+  });
+}
+
+
+function get_input_path(path) {
+  return _path.join(public_dir, path);
+}
+
+function get_output_path(path) {
+  var dir = _path.dirname(path);
+  var ext = _path.extname(path);
+  var name = _path.basename(path, ext);
+  return _path.join(
+    public_dir, dir, name + '.min' + ext
+  );
+}
+

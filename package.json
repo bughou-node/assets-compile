@@ -1,0 +1,20 @@
+{
+  "name": "assets_compile",
+  "version": "1.0.5",
+  "description": "compile js using browserify, compile css using less",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/bughou/assets_compile.git"
+  },
+  "homepage": "https://github.com/bughou/assets_compile",
+  "keywords": [
+    "assets",
+    "compile"
+  ],
+  "author": "bughou@gmail.com",
+  "license": "ISC"
+}
