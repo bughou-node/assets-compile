@@ -5,12 +5,14 @@ var exorcist = require('exorcist');
 var less = require('less');
 
 var async = require('async');
-var child_process = require('child_process');
-var path = require('path');
-var fs = require('fs');
 var colors = require('colors');
 var mkdir = require('mkdirp');
 var time_format = require('time_format');
+
+var path = require('path');
+var fs = require('fs');
+var child_process = require('child_process');
+
 var assets_json = require('../assets.json');
 var defaults = assets_json.defaults || { };
 
@@ -198,5 +200,3 @@ function get_output_path(asset_path, callback) {
     callback(output_path);
   });
 }
-
-

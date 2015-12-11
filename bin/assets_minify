@@ -8,10 +8,11 @@ var async = require('async');
 var fs = require('fs');
 var _path = require('path');
 var crypto = require('crypto');
-var time_format = require('../../common/utils/time_format.js');
+var time_format = require('time_format);
 
-var log_error = require('../../common/utils/track_error.js').log_error;
-var wrap_error = require('../../common/utils/track_error.js').wrap_error;
+var trace = require('error-trace');
+var log_error = trace.log;
+
 var assets_json = require('../assets.json');
 
 var public_dir = _path.normalize(__dirname + '/../public');
@@ -41,7 +42,7 @@ function if_modified(path, meta, callback, callback2) {
   if (!meta || !meta.mtime) return callback();
 
   fs.stat(get_input_path(path), function(err, stats) {
-    if (err) return callback2(wrap_error(err));
+    if (err) return callback2(trace(err));
 
     if (stats.mtime > new Date(meta.mtime)) {
       callback();
@@ -54,7 +55,7 @@ function if_modified(path, meta, callback, callback2) {
 // callback(err)
 function minify_asset(path, meta, callback) {
   minify(path, function(err, result){
-    if (err) return callback(wrap_error(err));
+    if (err) return callback(trace(err));
     var md5 = crypto.createHash('md5').update(result).digest('hex');
 
     meta.mtime = time_format({ zone: true })
@@ -91,7 +92,7 @@ function minify_css(path, callback) {
 function save_asset_file(path, result, callback) {
   var output_path = get_output_path(path);
   fs.writeFile(output_path, result, function(err) {
-    if (err) callback(wrap_error(err));
+    if (err) callback(trace(err));
     else callback();
   });
 }
