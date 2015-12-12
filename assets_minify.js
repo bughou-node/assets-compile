@@ -6,18 +6,14 @@ var cleancss = new CleanCSS();
 
 var async = require('async');
 var fs = require('fs');
-var _path = require('path');
+var p = require('path');
 var crypto = require('crypto');
-var time_format = require('time_format);
+var time_format = require('time_format');
 
 var trace = require('error-trace');
 var log_error = trace.log;
 
-var assets_json = require('../assets.json');
-
-var public_dir = _path.normalize(__dirname + '/../public');
-
-
+var assets_json = require(p.join(process.cwd(), './assets.json'));
 
 async.forEachOfSeries(assets_json, function (meta, path, callback) {
   if (!/\.(js|css)$/.test(path)) return callback();
@@ -29,8 +25,7 @@ async.forEachOfSeries(assets_json, function (meta, path, callback) {
 }, function(err) {
   if (err) return log_error(err);
   fs.writeFile(
-    _path.normalize(__dirname + '/../assets.json'),
-    JSON.stringify(assets_json, null, 2),
+    './assets.json', JSON.stringify(assets_json, null, 2),
     function(err) {
       if (err) log_error(err);
     });
@@ -67,7 +62,7 @@ function minify_asset(path, meta, callback) {
 }
 
 function minify(path, callback) {
-  switch(_path.extname(path)) {
+  switch(p.extname(path)) {
     case '.js':
       return minify_js(path, callback);
       break;
@@ -99,15 +94,15 @@ function save_asset_file(path, result, callback) {
 
 
 function get_input_path(path) {
-  return _path.join(public_dir, path);
+  return p.join('public', path);
 }
 
 function get_output_path(path) {
-  var dir = _path.dirname(path);
-  var ext = _path.extname(path);
-  var name = _path.basename(path, ext);
-  return _path.join(
-    public_dir, dir, name + '.min' + ext
+  var dir = p.dirname(path);
+  var ext = p.extname(path);
+  var name = p.basename(path, ext);
+  return p.join(
+    'public', dir, name + '.min' + ext
   );
 }
 

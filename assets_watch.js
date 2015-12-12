@@ -9,36 +9,52 @@ var colors = require('colors');
 var mkdir = require('mkdirp');
 var time_format = require('time_format');
 
-var path = require('path');
+var p = require('path');
 var fs = require('fs');
 var child_process = require('child_process');
 
-var assets_json = require('../assets.json');
-var defaults = assets_json.defaults || { };
-
-var asset_dir = path.join(__dirname, '../../..');
+var dir = process.cwd();
+var assets_json, defaults;
+var defaults_config = {
+  options: {
+    debug: true,
+    noParse: [ "jquery" ]
+  },
+  external: "jquery"
+};
 
 (function() {
   if (process.argv.length < 3) {
-    var cmd = path.relative(process.cwd(), process.argv[1]);
-    cmd = path.dirname(cmd) + '/' + path.basename(cmd);
+    var cmd = p.relative(process.cwd(), process.argv[1]);
+    cmd = p.dirname(cmd) + '/' + p.basename(cmd);
     console.log('usage: %s <path to .js or .less file> ...'.red, cmd);
     return;
   }
-
-  var dir = process.cwd();
-  process.chdir(asset_dir);
-
-  async.map(process.argv.slice(2), function(file_path, callback) {
-    watch_asset(get_asset_path(dir, file_path), callback);
-  }, function(err, results) {
-    if (results.indexOf(true) >= 0) save_assets_json();
+  read_assets_json(function (write_defaults) {
+    async.map(process.argv.slice(2), function(file_path, callback) {
+      watch_asset(get_asset_path(file_path), callback);
+    }, function(err, changed) {
+      if (write_defaults ||changed.indexOf(true) >= 0) save_assets_json();
+    });
   });
 })();
 
+function read_assets_json(callback) {
+  var path = p.join(dir, './assets.json')
+  fs.exists(path, function (exists) {
+    assets_json = exists ? require(path) : { };
+    if (!assets_json.defaults) {
+      var write_defaults = true;
+      assets_json.defaults = defaults_config;
+    }
+    defaults = assets_json.defaults;
+    callback(write_defaults);
+  });
+}
+
 
 function watch_asset(asset_path, callback) {
-  var ext = path.extname(asset_path);
+  var ext = p.extname(asset_path);
   if (ext === '.js' || ext === '.less') {
     add_to_assets_json(asset_path, function(changed) {
       ext === '.js' ? watch_js(asset_path) : watch_less(asset_path);
@@ -54,7 +70,7 @@ function watch_asset(asset_path, callback) {
 function add_to_assets_json(asset_path, callback) {
   var new_asset_path = asset_path.replace(/\.less$/, '.css');
   if (assets_json[new_asset_path]) return callback();
-  fs.exists(path.join(asset_dir, asset_path), function(exists) {
+  fs.exists(asset_path, function(exists) {
     if (!exists || assets_json[new_asset_path]) return callback();
     assets_json[new_asset_path] = { };
     callback(true);
@@ -63,8 +79,7 @@ function add_to_assets_json(asset_path, callback) {
 
 function save_assets_json() {
   fs.writeFile(
-    path.join(__dirname, '../assets.json'),
-    JSON.stringify(assets_json, null, 2),
+    './assets.json', JSON.stringify(assets_json, null, 2),
     function(err) {
       if (err) log_error(err);
     }
@@ -98,7 +113,7 @@ function compile_js(asset_path, callback) {
     browserify_js(asset_path).on('file', function(file, id, parent) {
       requires.push(file);
     }).bundle().pipe(exorcist(
-      output_path + '.map', path.basename(asset_path) + '.map', '/frontend'
+      output_path + '.map', p.basename(asset_path) + '.map'
     )).on('data', function(chunk) {
       length += chunk.length;
     }).on('end', function() {
@@ -138,8 +153,7 @@ function compile_less(asset_path, callback) {
     fs.readFileSync(asset_path, { encoding: 'utf8' }), {
       filename: asset_path,
       sourceMap: {
-        sourceMapURL: path.basename(css_path) + '.map',
-        sourceMapRootpath: '/frontend'
+        sourceMapURL: p.basename(css_path) + '.map'
       }
     }, function(err, output) {
       try {
@@ -184,16 +198,16 @@ function watch_files(files, callback) {
   }
 }
 
-function get_asset_path(dir, file_path) {
-  if (! path.isAbsolute(file_path)) {
-    file_path = path.join(dir, file_path);
+function get_asset_path(file_path) {
+  if (! p.isAbsolute(file_path)) {
+    file_path = p.join(dir, file_path);
   }
-  return path.relative(asset_dir, file_path);
+  return p.relative(dir, file_path);
 }
 
 function get_output_path(asset_path, callback) {
-  var output_path = path.join('public', asset_path);
-  mkdir(path.dirname(output_path), function(err) {
+  var output_path = p.join('public', asset_path);
+  mkdir(p.dirname(output_path), function(err) {
     if (err) {
       return console.log(err);
     }
