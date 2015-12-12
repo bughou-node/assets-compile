@@ -2,7 +2,6 @@
   "name": "assets-compile",
   "version": "0.0.1",
   "description": "compile js using browserify, compile css using less",
-  "main": "index.js",
   "bin": {
     "assets_watch": "./assets_watch.js",
     "assets_minify": "./assets_minify.js"
@@ -12,9 +11,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com/bughou/assets-compile.git"
+    "url": "git@github.com/bughou-node/assets-compile.git"
   },
-  "homepage": "https://github.com/bughou/assets-compile",
+  "homepage": "https://github.com/bughou-node/assets-compile",
   "keywords": [
     "assets",
     "compile"

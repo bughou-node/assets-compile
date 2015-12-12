@@ -11,7 +11,6 @@ var time_format = require('time_format');
 
 var p = require('path');
 var fs = require('fs');
-var child_process = require('child_process');
 
 var dir = process.cwd();
 var assets_json, defaults;
