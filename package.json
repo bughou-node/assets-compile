@@ -26,9 +26,9 @@
     "exorcist": "^0.4.0",
     "less": "^2.5.3",
     "colors": "^1.1.2",
-    "error-trace": "0.0.6",
+    "error-trace": ">=0.0.6",
     "mkdirp": "^0.5.1",
-    "time_format": "0.0.6",
+    "time_format": ">=0.0.6",
     "async": "^1.5.0",
     "uglify-js": "^2.6.1",
     "clean-css": "^3.4.8"
