@@ -6,7 +6,7 @@ var less = require('less');
 
 var async = require('async');
 var colors = require('colors');
-var mkdir = require('mkdirp');
+var mkdirp = require('mkdirp');
 var time_format = require('time_format');
 
 var p = require('path');
@@ -26,7 +26,7 @@ var defaults_config = {
   if (process.argv.length < 3) {
     var cmd = p.relative(process.cwd(), process.argv[1]);
     cmd = p.dirname(cmd) + '/' + p.basename(cmd);
-    console.log('usage: %s <path to .js or .less file> ...'.red, cmd);
+    console.error('usage: %s <path to .js or .less file> ...'.red, cmd);
     return;
   }
   read_assets_json(function (write_defaults) {
@@ -60,7 +60,7 @@ function watch_asset(asset_path, callback) {
       callback(null, changed);
     });
   } else {
-    console.log('unknown ext %s for: %s '.red, ext, asset_path);
+    console.error('unknown ext %s for: %s '.red, ext, asset_path);
     callback();
   }
 }
@@ -80,7 +80,7 @@ function save_assets_json() {
   fs.writeFile(
     './assets.json', JSON.stringify(assets_json, null, 2),
     function(err) {
-      if (err) log_error(err);
+      if (err) console.error(err.stack);
     }
   );
 }
@@ -157,12 +157,12 @@ function compile_less(asset_path, callback) {
     }, function(err, output) {
       try {
         if (err) {
-          console.log((err.message || err.toString()).red);
+          console.error((err.message || err.toString()).red);
           return callback();
         }
         write_less_output(css_path, output, start_time, callback);
       } catch (e) {
-        console.log(e.stack.red);
+        console.error(e.stack.red);
       }
     });
 }
@@ -206,9 +206,9 @@ function get_asset_path(file_path) {
 
 function get_output_path(asset_path, callback) {
   var output_path = p.join('public', asset_path);
-  mkdir(p.dirname(output_path), function(err) {
+  mkdirp(p.dirname(output_path), function(err) {
     if (err) {
-      return console.log(err);
+      return console.error(err);
     }
     callback(output_path);
   });
