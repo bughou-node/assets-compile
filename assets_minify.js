@@ -19,7 +19,6 @@ async.forEachOfSeries(assets_json, function (meta, path, callback) {
   if (!/\.(js|css)$/.test(path)) return callback();
 
   if_modified(path, meta, function() {
-    console.log(path);
     minify_asset(path, meta, callback);
   }, callback);
 }, function(err) {
@@ -86,6 +85,7 @@ function minify_css(path, callback) {
 
 function save_asset_file(path, result, callback) {
   var output_path = get_output_path(path);
+  console.log(output_path);
   fs.writeFile(output_path, result, function(err) {
     if (err) callback(trace(err));
     else callback();

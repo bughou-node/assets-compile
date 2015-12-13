@@ -9,12 +9,10 @@ process.chdir(__dirname);
 
 describe('assets_watch', function () {
   it('should work', function (done) {
-    this.timeout(5000);
-
     cp.execFileSync('rm', [ '-rf', 'assets.json', 'public' ]);
 
     var child = cp.spawn('../assets_watch.js', [ 'js/chat.js', 'css/chat.less' ], {
-      stdio: [ 'inherit', 'pipe', 'inherit' ]
+      stdio: [ 0, 'pipe', 2 ]
     });
 
     var lines = 0;
@@ -45,5 +43,12 @@ describe('assets_watch', function () {
 
 describe('assets_minify', function () {
   it('should work', function () {
+    cp.execFileSync('rm', [
+      '-f', 'public/js/chat.min.js', 'public/css/chat.min.css'
+    ]);
+
+    var output = cp.execFileSync('../assets_minify.js').toString();
+
+    assert(output === 'public/js/chat.min.js\npublic/css/chat.min.css\n');
   });
 });
