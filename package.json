@@ -1,6 +1,6 @@
 {
   "name": "assets-compile",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "compile js using browserify, compile css using less",
   "bin": {
     "assets_watch": "./assets_watch.js",
