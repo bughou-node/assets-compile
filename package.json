@@ -1,13 +1,13 @@
 {
   "name": "assets-compile",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "compile js using browserify, compile css using less",
   "bin": {
     "assets_watch": "./assets_watch.js",
     "assets_minify": "./assets_minify.js"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha test/test.js"
   },
   "repository": {
     "type": "git",

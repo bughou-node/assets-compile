@@ -112,7 +112,7 @@ function compile_js(asset_path, callback) {
     browserify_js(asset_path).on('file', function(file, id, parent) {
       requires.push(file);
     }).bundle().pipe(exorcist(
-      output_path + '.map', p.basename(asset_path) + '.map'
+      output_path + '.map', p.basename(asset_path) + '.map', '/source-maps'
     )).on('data', function(chunk) {
       length += chunk.length;
     }).on('end', function() {
@@ -152,7 +152,8 @@ function compile_less(asset_path, callback) {
     fs.readFileSync(asset_path, { encoding: 'utf8' }), {
       filename: asset_path,
       sourceMap: {
-        sourceMapURL: p.basename(css_path) + '.map'
+        sourceMapURL: p.basename(css_path) + '.map',
+        sourceMapRootpath: '/source-maps'
       }
     }, function(err, output) {
       try {
